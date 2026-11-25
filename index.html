@@ -132,6 +132,9 @@
   .stamp.earned .ring{border:3px solid var(--panel);color:#fff;box-shadow:0 0 0 2.5px var(--sc), inset 0 0 0 2.5px rgba(255,255,255,.45)}
   .stamp small{display:block;margin-top:7px;font-size:12.5px;font-weight:800;color:var(--muted);line-height:1.3}
   .share-btn{margin-top:18px;background:var(--accent);color:#fff;border:0;border-radius:12px;padding:11px 18px;font-weight:900;font-size:15px}
+  .share-link-wrap{margin:10px 0 0;font-size:14.5px;font-weight:800;line-height:1.45}
+  .share-link{color:var(--accent);text-decoration:underline;text-underline-offset:3px;overflow-wrap:break-word}
+  .share-link:hover{text-decoration-thickness:2px}
   .share-msg{font-size:14px;font-weight:800;color:var(--good);margin:8px 0 0;min-height:20px;overflow-wrap:break-word}
   .finish{display:none;background:#14532d;color:#fff;border-radius:16px;padding:18px 16px;margin-top:16px;text-align:center}
   .finish.show{display:block}
@@ -252,6 +255,7 @@
     <div class="stamps" id="stamps" aria-label="Passport stamps"></div>
 
     <button type="button" class="share-btn" id="shareBtn">Share my city</button>
+    <p class="share-link-wrap">Play the game: <a class="share-link" href="https://sounny.github.io/lunar-cities/" target="_blank" rel="noopener noreferrer">sounny.github.io/lunar-cities</a></p>
     <p class="share-msg" id="shareMsg" role="status"></p>
 
     <div class="finish" id="finishBox">
@@ -749,15 +753,16 @@
     }catch(e){ return false; }
   }
 
+  var GAME_URL = "https://sounny.github.io/lunar-cities/";
   document.getElementById("shareBtn").addEventListener("click", function(){
     var s=computeScore();
     var cityName = ranking.length ? cityById(ranking[0]).name : (state.city ? state.city.name : null);
     var text = cityName
-      ? "My Moon city is "+cityName+" and I scored "+s.total+" points in Lunar Cities. Play it here: https://sounny.github.io/lunar-cities/ See you on the Moon?"
-      : "I scored "+s.total+" points in Lunar Cities. Play it here: https://sounny.github.io/lunar-cities/ See you on the Moon?";
+      ? "My Moon city is "+cityName+" and I scored "+s.total+" points in Lunar Cities. Play it here: "+GAME_URL+" See you on the Moon?"
+      : "I scored "+s.total+" points in Lunar Cities. Play it here: "+GAME_URL+" See you on the Moon?";
     var msg=document.getElementById("shareMsg");
     function done(){
-      msg.textContent="Copied! Share it with a friend.";
+      msg.textContent="Copied — with the link to play! Share it with a friend.";
       earnStamp("discuss");
     }
     function failed(){ msg.textContent="Copy this and share it: "+text; }
