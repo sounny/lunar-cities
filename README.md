@@ -21,6 +21,9 @@ Each city has its own color, philosophy, and gameplay bonus.
 3. Place it on a free hex. Craters are blocked.
 4. Score points for buildings, habitats side by side, solar power coverage, and
    building mix. Reach 60 points or fill the board to win.
+5. Fill your Lunar Citizen Passport: rank the five cities in order, collect the
+   four stamps (Build, Dream, Imagine, Discuss), and finish with "See you on
+   the Moon?"
 
 Controls: Undo, Eraser, Clear, and Surprise me. Play again any time.
 
