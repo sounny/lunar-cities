@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:,">
+<title>Lunar Cities</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#eef1f7; --panel:#ffffff; --panel2:#f6f7fb; --ink:#171a26; --muted:#5b6172;
+    --line:#d9deeb; --moon:#c9ccd6; --moon-line:#8f94a6; --accent:#2563eb;
+    --good:#15803d; --shadow:0 10px 30px rgba(20,24,50,.12);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0d1020; --panel:#171a2e; --panel2:#1f233c; --ink:#f2f3fa; --muted:#a7adc4;
+      --line:#2e3352; --moon:#3a3f5c; --moon-line:#6d7396; --shadow:0 10px 30px rgba(0,0,0,.45);
+      color-scheme: dark;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:"Nunito",system-ui,sans-serif;background:var(--bg);color:var(--ink);-webkit-tap-highlight-color:transparent}
+  button{font-family:inherit;cursor:pointer;min-height:44px}
+  .wrap{max-width:1060px;margin:0 auto;padding:16px 14px 40px}
+
+  /* Header */
+  .hero{background:#12142a;color:#fff;border-radius:20px;padding:20px 18px 16px;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;right:-30px;top:-30px;width:150px;height:150px;border-radius:50%;background:#e8eaf2;opacity:.92;box-shadow:inset -18px -10px 0 #c6c9d6}
+  .hero h1{font-family:"Fredoka",sans-serif;font-size:clamp(30px,6vw,46px);margin:0;letter-spacing:.5px;line-height:1.05;position:relative;z-index:1}
+  .hero p{margin:8px 0 0;font-size:16px;font-weight:700;color:#c9cdea;max-width:520px;position:relative;z-index:1}
+  .stars{position:absolute;inset:0;pointer-events:none}
+  .stars i{position:absolute;background:#fff;border-radius:50%;opacity:.8}
+
+  h2{font-family:"Fredoka",sans-serif;font-size:22px;margin:22px 0 10px}
+  h2 .step{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--bg);font-size:15px;margin-right:8px;vertical-align:2px}
+
+  /* City cards */
+  .cities{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+  @media (max-width:820px){.cities{grid-template-columns:repeat(2,1fr)} .cities .city:last-child{grid-column:span 2}}
+  @media (max-width:420px){.cities{grid-template-columns:1fr 1fr}}
+  .city{border:3px solid var(--line);background:var(--panel);border-radius:16px;padding:12px 10px;text-align:left;width:100%;color:var(--ink)}
+  .city .dot{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-family:"Fredoka",sans-serif;font-weight:700;font-size:17px;margin-bottom:8px}
+  .city b{font-family:"Fredoka",sans-serif;font-size:19px;display:block;line-height:1.1}
+  .city .kind{font-size:12.5px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);display:block;margin:3px 0 6px}
+  .city .phil{font-size:13.5px;line-height:1.35;display:block;color:var(--ink)}
+  .city .bonus{font-size:12.5px;line-height:1.35;display:block;margin-top:7px;padding:6px 8px;border-radius:9px;background:var(--panel2);font-weight:800}
+  .city[aria-pressed="true"]{border-color:var(--c);box-shadow:0 0 0 3px color-mix(in srgb, var(--c) 35%, transparent);background:color-mix(in srgb, var(--c) 8%, var(--panel))}
+
+  /* Game layout */
+  .game{display:grid;grid-template-columns:1fr 300px;gap:14px;align-items:start}
+  @media (max-width:820px){.game{grid-template-columns:1fr}}
+  .board-card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:12px;box-shadow:var(--shadow)}
+  .board-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+  .board-head b{font-family:"Fredoka",sans-serif;font-size:18px}
+  .board-head span{font-size:13.5px;color:var(--muted);font-weight:700}
+  #board{width:100%;height:auto;display:block}
+  .hex{cursor:pointer}
+  .hex polygon.face{stroke:var(--moon-line);stroke-width:2}
+  .hex:hover polygon.face{stroke:var(--ink)}
+  .hex:focus{outline:none}
+  .hex:focus polygon.face{stroke:var(--ink);stroke-width:3.5}
+  .tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .tools button{border:2px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:12px;padding:8px 14px;font-weight:900;font-size:14px}
+
+  /* Palette */
+  .side{display:flex;flex-direction:column;gap:14px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:14px;box-shadow:var(--shadow)}
+  .panel h3{font-family:"Fredoka",sans-serif;margin:0 0 10px;font-size:18px}
+  .palette{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .bld{display:flex;align-items:center;gap:9px;border:2.5px solid var(--line);background:var(--panel2);border-radius:13px;padding:8px 9px;text-align:left;color:var(--ink);width:100%}
+  .bld .ic{width:34px;height:34px;flex:0 0 34px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff}
+  .bld b{font-size:14.5px;line-height:1.15;display:block}
+  .bld small{font-size:12px;color:var(--muted);font-weight:800}
+  .bld[aria-pressed="true"]{border-color:var(--ink);background:var(--panel);box-shadow:0 0 0 2px var(--line)}
+  .bld.wide{grid-column:span 2}
+
+  /* Score */
+  .score-num{font-family:"Fredoka",sans-serif;font-size:44px;line-height:1}
+  .score-num small{font-size:17px;color:var(--muted);font-weight:600}
+  .bar{height:14px;border-radius:99px;background:var(--panel2);border:1px solid var(--line);overflow:hidden;margin:10px 0 4px}
+  .bar i{display:block;height:100%;width:0%;background:var(--good);border-radius:99px;transition:width .35s ease}
+  .bar-label{font-size:13px;font-weight:800;color:var(--muted)}
+  .breakdown{list-style:none;margin:12px 0 0;padding:0;font-size:14.5px}
+  .breakdown li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px dashed var(--line)}
+  .breakdown li b{font-weight:900;white-space:nowrap}
+  .tip{font-size:13.5px;background:var(--panel2);border-radius:11px;padding:9px 11px;margin-top:12px;line-height:1.45;font-weight:700}
+
+  /* Win */
+  .win{display:none;background:#14532d;color:#fff;border-radius:20px;padding:18px;text-align:center;margin-top:14px}
+  .win.show{display:block}
+  .win h3{font-family:"Fredoka",sans-serif;font-size:26px;margin:0 0 6px}
+  .win p{margin:0 0 12px;font-weight:700;color:#d7f5e0}
+  .win button{background:#fff;color:#14532d;border:0;border-radius:12px;padding:10px 18px;font-weight:900;font-size:15px;margin:0 4px}
+  .win button.ghost{background:transparent;color:#fff;border:2px solid #fff}
+
+  /* How to play */
+  .how{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:16px}
+  .how ol{margin:0;padding-left:22px;font-size:15.5px;line-height:1.55}
+  .how li{margin:5px 0}
+  .how b{font-weight:900}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:12px;font-size:13.5px;font-weight:800;color:var(--muted)}
+  footer{margin-top:22px;font-size:13px;color:var(--muted);text-align:center;font-weight:700}
+  @media (max-width:600px){
+    .hero::after{width:84px;height:84px;right:-18px;top:-18px}
+    .hero p{max-width:76%}
+  }
+  @media (prefers-reduced-motion: reduce){ .bar i{transition:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="stars" id="stars" aria-hidden="true"></div>
+    <h1>Lunar Cities</h1>
+    <p>Build your own Moon neighborhood. Pick a city, place buildings on the hex board, and score big.</p>
+  </header>
+
+  <h2><span class="step">1</span>Pick your city-state</h2>
+  <div class="cities" id="cities" role="group" aria-label="Choose a city-state"></div>
+
+  <h2><span class="step">2</span>Build your neighborhood</h2>
+  <div class="game">
+    <div class="board-card">
+      <div class="board-head">
+        <b id="boardTitle">The Moon board</b>
+        <span id="boardCount">0 of 26 spots filled</span>
+      </div>
+      <svg id="board" viewBox="0 0 640 470" role="group" aria-label="Hex board. Tap a hex to place the selected building."></svg>
+      <div class="tools">
+        <button type="button" id="undoBtn">Undo last</button>
+        <button type="button" id="clearBtn">Clear board</button>
+        <button type="button" id="randomBtn">Surprise me</button>
+      </div>
+      <div class="win" id="winBox" role="status">
+        <h3 id="winTitle">You did it!</h3>
+        <p id="winText"></p>
+        <button type="button" id="againBtn">Play again</button>
+        <button type="button" class="ghost" id="keepBtn">Keep building</button>
+      </div>
+    </div>
+
+    <div class="side">
+      <div class="panel">
+        <h3>Buildings</h3>
+        <div class="palette" id="palette"></div>
+        <p class="tip" id="toolTip">Tap a building, then tap a hex on the board.</p>
+      </div>
+
+      <div class="panel" aria-live="polite">
+        <h3>Your score</h3>
+        <div class="score-num"><span id="scoreNum">0</span> <small>/ 60 to win</small></div>
+        <div class="bar"><i id="scoreBar"></i></div>
+        <div class="bar-label" id="barLabel">60 points wins the game. Filling the whole board wins too.</div>
+        <ul class="breakdown">
+          <li><span>Buildings</span><b id="bdBase">0</b></li>
+          <li><span>Home buddies: habitats side by side</span><b id="bdHome">0</b></li>
+          <li><span>Solar power: buildings next to a solar array</span><b id="bdSolar">0</b></li>
+          <li><span>Great mix: different kinds of buildings</span><b id="bdMix">0</b></li>
+          <li><span>City bonus</span><b id="bdCity">0</b></li>
+        </ul>
+        <p class="tip" id="scoreTip">Tip: put habitats next to each other, and tuck buildings beside solar arrays.</p>
+      </div>
+    </div>
+  </div>
+
+  <h2><span class="step">3</span>How to play</h2>
+  <div class="how">
+    <ol>
+      <li><b>Pick a city.</b> Each city has its own bonus. Choose the one you like best.</li>
+      <li><b>Pick a building</b> from the Buildings list.</li>
+      <li><b>Tap a hex</b> on the Moon board to place it. Gray hatched hexes are craters. Nothing can go there.</li>
+      <li><b>Score points.</b> Habitats like neighbors. Buildings next to solar arrays get power points. A good mix scores more.</li>
+      <li><b>Win</b> by reaching 60 points, or by filling every spot on the board.</li>
+    </ol>
+    <div class="legend">
+      <span>Made a mistake? Use the Eraser, or tap Undo last.</span>
+      <span>Want a new start? Tap Play again or Clear board.</span>
+    </div>
+  </div>
+
+  <footer>Based on the Moon exhibit: five city-states share the Moon, and each one has its own idea of a good life.</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var CITIES = [
+    { id:"bigan", name:"Bigan", kind:"The Feel-Good City", color:"#e75480",
+      phil:"Rest, play, and enjoy the view. Life should feel good.",
+      bonusText:"Fun Parks score double.",
+      bonusLabel:"Fun Parks x2" },
+    { id:"kali", name:"Kali", kind:"The Pirate City", color:"#d63c2a",
+      phil:"Bold, free, and a little bit sneaky. Rules are made to bend.",
+      bonusText:"Buildings on the edge of the board score +2 each. Pirates love an escape route.",
+      bonusLabel:"Edge spots +2" },
+    { id:"ogun", name:"Ogun", kind:"The Factory City", color:"#b06a1b",
+      phil:"Build, make, and fix. Hard work powers the Moon.",
+      bonusText:"Factories score double.",
+      bonusLabel:"Factories x2" },
+    { id:"khonsou", name:"Khonsou", kind:"The Stopover City", color:"#0e9594",
+      phil:"A busy spaceport. Travelers come and go on their way to Mars.",
+      bonusText:"Landing Pads score double.",
+      bonusLabel:"Landing Pads x2" },
+    { id:"quetzal", name:"Quetzal", kind:"City of Science", color:"#3d9b35",
+      phil:"Ask questions and study the Moon. Knowledge comes first.",
+      bonusText:"Science Labs score double.",
+      bonusLabel:"Labs x2" }
+  ];
+
+  function iconDome(c){return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M4 19a8 8 0 0 1 16 0"/><path d="M2 19h20"/><path d="M12 11V7"/></svg>';}
+  function iconLeaf(){return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M5 19C5 10 12 4 20 4c0 8-5 15-14 15"/><path d="M5 19c2-5 6-9 10-11"/></svg>';}
+  function iconFlask(){return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M10 3h4M10 3v6l-5 10a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-10V3"/><path d="M8 15h8"/></svg>';}
+  function iconSun(){return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><rect x="4" y="8" width="16" height="10"/><path d="M4 13h16M9.3 8v10M14.6 8v10M12 8V4"/></svg>';}
+  function iconFactory(){return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 21V10l6 4v-4l6 4V6h4v15z"/><path d="M17 6V3"/></svg>';}
+  function iconRocket(){return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M12 3c3 2 4 6 4 10l-4 3-4-3c0-4 1-8 4-10z"/><circle cx="12" cy="9" r="1.6"/><path d="M8 13l-2 5 3-1M16 13l2 5-3-1"/></svg>';}
+  function iconStar(){return '<svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M12 3l2.6 5.6 6 .7-4.4 4.1 1.2 5.9L12 16.4 6.6 19.3 7.8 13.4 3.4 9.3l6-.7z"/></svg>';}
+  function iconEraser(){return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M5 15l8-9a2 2 0 0 1 3 0l3 3a2 2 0 0 1 0 3l-6 6H8l-3-3z"/><path d="M5 21h14"/></svg>';}
+
+  var BUILDINGS = [
+    { id:"habitat", name:"Habitat Dome", short:"Home", pts:2, color:"#3b82c4", icon:iconDome },
+    { id:"greenhouse", name:"Greenhouse", short:"Food", pts:3, color:"#3d9b35", icon:iconLeaf },
+    { id:"lab", name:"Science Lab", short:"Lab", pts:3, color:"#7c5cbf", icon:iconFlask },
+    { id:"solar", name:"Solar Array", short:"Solar", pts:2, color:"#d99a06", icon:iconSun },
+    { id:"factory", name:"Factory", short:"Factory", pts:3, color:"#8a6d4b", icon:iconFactory },
+    { id:"landing", name:"Landing Pad", short:"Rocket", pts:3, color:"#5b7a99", icon:iconRocket },
+    { id:"park", name:"Fun Park", short:"Fun", pts:3, color:"#e75480", icon:iconStar }
+  ];
+  var BLD = {};
+  BUILDINGS.forEach(function(b){ BLD[b.id]=b; });
+
+  var COLS = 6, ROWS = 5;
+  var CRATERS = { "0,3":true, "5,1":true, "2,4":true, "4,3":true };
+  var TOTAL = COLS*ROWS - Object.keys(CRATERS).length;
+  var TARGET = 60;
+
+  var state = { city:null, tool:"habitat", board:{}, history:[], won:false, winDismissed:false };
+
+  // Stars in header
+  var starsEl = document.getElementById("stars");
+  var starPos = [[8,20],[40,60],[90,15],[150,70],[210,30],[300,55],[380,18],[460,66],[540,26],[600,60],[70,95],[260,100],[430,95],[580,105]];
+  starPos.forEach(function(p,i){
+    var s=document.createElement("i");
+    var sz = (i%3)+2;
+    s.style.width=sz+"px"; s.style.height=sz+"px"; s.style.left=p[0]+"px"; s.style.top=p[1]+"px";
+    starsEl.appendChild(s);
+  });
+
+  // City cards
+  var citiesEl = document.getElementById("cities");
+  CITIES.forEach(function(c){
+    var btn=document.createElement("button");
+    btn.type="button"; btn.className="city"; btn.style.setProperty("--c", c.color);
+    btn.setAttribute("aria-pressed","false"); btn.dataset.city=c.id;
+    btn.innerHTML = '<span class="dot" style="background:'+c.color+'">'+c.name.charAt(0)+'</span>'+
+      '<b>'+c.name+'</b><span class="kind">'+c.kind+'</span>'+
+      '<span class="phil">'+c.phil+'</span>'+
+      '<span class="bonus">Bonus: '+c.bonusText+'</span>';
+    btn.addEventListener("click", function(){ selectCity(c.id); });
+    citiesEl.appendChild(btn);
+  });
+
+  function selectCity(id){
+    state.city = CITIES.filter(function(c){return c.id===id;})[0];
+    Array.prototype.forEach.call(citiesEl.children, function(el){
+      el.setAttribute("aria-pressed", el.dataset.city===id ? "true":"false");
+    });
+    document.getElementById("boardTitle").textContent = state.city.name + " on the Moon";
+    updateScore();
+  }
+
+  // Palette
+  var paletteEl = document.getElementById("palette");
+  BUILDINGS.forEach(function(b){
+    var btn=document.createElement("button");
+    btn.type="button"; btn.className="bld"; btn.dataset.tool=b.id;
+    btn.setAttribute("aria-pressed", b.id===state.tool ? "true":"false");
+    btn.innerHTML = '<span class="ic" style="background:'+b.color+'">'+b.icon()+'</span><span><b>'+b.name+'</b><small>'+b.pts+' points</small></span>';
+    btn.addEventListener("click", function(){ selectTool(b.id); });
+    paletteEl.appendChild(btn);
+  });
+  var eraserBtn=document.createElement("button");
+  eraserBtn.type="button"; eraserBtn.className="bld wide"; eraserBtn.dataset.tool="eraser";
+  eraserBtn.setAttribute("aria-pressed","false");
+  eraserBtn.innerHTML = '<span class="ic" style="background:#6b7280">'+iconEraser()+'</span><span><b>Eraser</b><small>Tap a building to remove it</small></span>';
+  eraserBtn.addEventListener("click", function(){ selectTool("eraser"); });
+  paletteEl.appendChild(eraserBtn);
+
+  function selectTool(id){
+    state.tool=id;
+    Array.prototype.forEach.call(paletteEl.children, function(el){
+      el.setAttribute("aria-pressed", el.dataset.tool===id ? "true":"false");
+    });
+    var tip=document.getElementById("toolTip");
+    if(id==="eraser"){ tip.textContent="Eraser picked. Tap a building on the board to remove it."; }
+    else { tip.textContent=BLD[id].name+" picked. Tap a hex on the board to place it."; }
+  }
+
+  // Hex board (SVG)
+  var SVGNS="http://www.w3.org/2000/svg";
+  var boardEl=document.getElementById("board");
+  var R=52, W=Math.sqrt(3)*R, H=2*R;
+  var hexEls={};
+
+  function hexPoints(cx,cy){
+    var pts=[];
+    for(var i=0;i<6;i++){
+      var a=Math.PI/180*(60*i-30);
+      pts.push((cx+R*Math.cos(a)).toFixed(1)+","+(cy+R*Math.sin(a)).toFixed(1));
+    }
+    return pts.join(" ");
+  }
+  function cellCenter(col,row){
+    var x = 60 + col*(W+6) + (row%2 ? (W+6)/2 : 0);
+    var y = 58 + row*(H*0.75+5);
+    return {x:x,y:y};
+  }
+
+  for(var row=0; row<ROWS; row++){
+    for(var col=0; col<COLS; col++){
+      (function(col,row){
+        var key=col+","+row;
+        var c=cellCenter(col,row);
+        var g=document.createElementNS(SVGNS,"g");
+        g.setAttribute("class","hex");
+        g.setAttribute("tabindex","0");
+        g.setAttribute("role","button");
+        var crater = !!CRATERS[key];
+        g.setAttribute("aria-label", crater ? "Crater. Blocked." : "Empty hex, row "+(row+1)+", spot "+(col+1));
+        var poly=document.createElementNS(SVGNS,"polygon");
+        poly.setAttribute("points", hexPoints(c.x,c.y));
+        poly.setAttribute("class","face");
+        poly.style.fill = crater ? "url(#hatch)" : "var(--moon)";
+        g.appendChild(poly);
+        if(crater){
+          var t=document.createElementNS(SVGNS,"text");
+          t.setAttribute("x",c.x); t.setAttribute("y",c.y+5);
+          t.setAttribute("text-anchor","middle");
+          t.setAttribute("font-size","12"); t.setAttribute("font-weight","800");
+          t.setAttribute("fill","#3f4356");
+          t.textContent="CRATER";
+          g.appendChild(t);
+        }
+        var iconG=document.createElementNS(SVGNS,"g");
+        iconG.setAttribute("transform","translate("+(c.x-13)+","+(c.y-22)+") scale(1.1)");
+        iconG.style.display="none";
+        g.appendChild(iconG);
+        var label=document.createElementNS(SVGNS,"text");
+        label.setAttribute("x",c.x); label.setAttribute("y",c.y+26);
+        label.setAttribute("text-anchor","middle");
+        label.setAttribute("font-size","12.5"); label.setAttribute("font-weight","800");
+        label.setAttribute("fill","#fff");
+        label.style.display="none";
+        g.appendChild(label);
+        if(!crater){
+          g.addEventListener("click", function(){ onHex(key); });
+          g.addEventListener("keydown", function(e){
+            if(e.key==="Enter"||e.key===" "){ e.preventDefault(); onHex(key); }
+          });
+        }
+        boardEl.appendChild(g);
+        hexEls[key]={g:g, poly:poly, iconG:iconG, label:label, crater:crater};
+      })(col,row);
+    }
+  }
+  // Hatch pattern for craters
+  var defs=document.createElementNS(SVGNS,"defs");
+  defs.innerHTML='<pattern id="hatch" width="9" height="9" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><rect width="9" height="9" fill="#a8adc0"/><line x1="0" y1="0" x2="0" y2="9" stroke="#5f657d" stroke-width="2.5"/></pattern>';
+  boardEl.insertBefore(defs, boardEl.firstChild);
+
+  function neighbors(key){
+    var parts=key.split(","), col=+parts[0], row=+parts[1];
+    var even = row%2===0;
+    var dirs = even ?
+      [[1,0],[-1,0],[0,-1],[-1,-1],[0,1],[-1,1]] :
+      [[1,0],[-1,0],[1,-1],[0,-1],[1,1],[0,1]];
+    var out=[];
+    dirs.forEach(function(d){
+      var nc=col+d[0], nr=row+d[1];
+      if(nc>=0&&nc<COLS&&nr>=0&&nr<ROWS) out.push(nc+","+nr);
+    });
+    return out;
+  }
+  function isEdge(key){
+    var parts=key.split(","), col=+parts[0], row=+parts[1];
+    return col===0||row===0||col===COLS-1||row===ROWS-1;
+  }
+
+  function onHex(key){
+    if(!state.city){
+      document.getElementById("toolTip").textContent="Pick a city first, up in step 1. Then place your buildings.";
+      document.getElementById("cities").scrollIntoView({behavior:"smooth", block:"center"});
+      return;
+    }
+    if(state.tool==="eraser"){
+      if(state.board[key]){
+        state.history.push({key:key, prev:state.board[key]});
+        delete state.board[key];
+        state.winDismissed=false;
+        renderCell(key); updateScore();
+      }
+      return;
+    }
+    if(state.board[key]===state.tool) return;
+    state.history.push({key:key, prev:state.board[key]||null});
+    state.board[key]=state.tool;
+    state.winDismissed=false;
+    renderCell(key); updateScore();
+  }
+
+  function renderCell(key){
+    var cell=hexEls[key], type=state.board[key];
+    if(!type){
+      cell.poly.style.fill="var(--moon)";
+      cell.iconG.style.display="none"; cell.label.style.display="none";
+      cell.g.setAttribute("aria-label","Empty hex");
+      return;
+    }
+    var b=BLD[type];
+    cell.poly.style.fill=b.color;
+    cell.iconG.innerHTML=b.icon();
+    cell.iconG.style.display="block";
+    cell.label.textContent=b.short;
+    cell.label.style.display="block";
+    cell.g.setAttribute("aria-label", b.name);
+  }
+
+  function computeScore(){
+    var base=0, home=0, solar=0, cityBonus=0;
+    var keys=Object.keys(state.board);
+    var types={};
+    keys.forEach(function(k){ types[state.board[k]]=true; });
+
+    keys.forEach(function(k){
+      var type=state.board[k], b=BLD[type];
+      base += b.pts;
+      // City bonus
+      if(state.city){
+        if(state.city.id==="bigan" && type==="park") cityBonus += b.pts;
+        if(state.city.id==="ogun" && type==="factory") cityBonus += b.pts;
+        if(state.city.id==="khonsou" && type==="landing") cityBonus += b.pts;
+        if(state.city.id==="quetzal" && type==="lab") cityBonus += b.pts;
+        if(state.city.id==="kali" && isEdge(k)) cityBonus += 2;
+      }
+      // Home buddies
+      if(type==="habitat"){
+        neighbors(k).forEach(function(n){
+          if(state.board[n]==="habitat") home += 1;
+        });
+      }
+      // Solar power: building next to a solar array (solar itself does not count)
+      if(type!=="solar"){
+        var powered = neighbors(k).some(function(n){ return state.board[n]==="solar"; });
+        if(powered) solar += 1;
+      }
+    });
+    home = home/2; // each pair counted twice
+    var mix = Math.max(0, (Object.keys(types).length - 1)) * 2;
+    return { base:base, home:home, solar:solar, mix:mix, city:cityBonus,
+             total: base+home+solar+mix+cityBonus, filled: keys.length,
+             kinds: Object.keys(types).length };
+  }
+
+  function updateScore(){
+    var s=computeScore();
+    document.getElementById("scoreNum").textContent=s.total;
+    document.getElementById("bdBase").textContent=s.base;
+    document.getElementById("bdHome").textContent=s.home;
+    document.getElementById("bdSolar").textContent=s.solar;
+    document.getElementById("bdMix").textContent=s.mix;
+    document.getElementById("bdCity").textContent= state.city ? s.city : "pick a city";
+    document.getElementById("scoreBar").style.width=Math.min(100, Math.round(s.total/TARGET*100))+"%";
+    document.getElementById("boardCount").textContent=s.filled+" of "+TOTAL+" spots filled";
+    var tip=document.getElementById("scoreTip");
+    if(!state.city) tip.textContent="Tip: pick a city in step 1 to unlock its bonus.";
+    else if(s.kinds<4) tip.textContent="Tip: try more kinds of buildings. A great mix adds points.";
+    else if(s.solar===0) tip.textContent="Tip: place a Solar Array, then put buildings next to it for power points.";
+    else if(s.home===0) tip.textContent="Tip: put two Habitat Domes side by side for home buddy points.";
+    else tip.textContent="Looking great. Keep building to reach "+TARGET+" points.";
+
+    var winBox=document.getElementById("winBox");
+    var wonNow = s.total>=TARGET || s.filled>=TOTAL;
+    if(wonNow && !state.winDismissed){
+      state.won=true;
+      document.getElementById("winTitle").textContent =
+        s.filled>=TOTAL && s.total<TARGET ? "Board full. You win!" : "You win, Moon builder!";
+      document.getElementById("winText").textContent =
+        (state.city ? state.city.name : "Your city")+" scored "+s.total+" points with "+s.filled+" buildings. Look at your neighborhood. Does it look like the city you imagined?";
+      winBox.classList.add("show");
+    } else if(!wonNow){
+      state.won=false; state.winDismissed=false;
+      winBox.classList.remove("show");
+    }
+  }
+
+  document.getElementById("undoBtn").addEventListener("click", function(){
+    var last=state.history.pop();
+    if(!last) return;
+    if(last.prev) state.board[last.key]=last.prev; else delete state.board[last.key];
+    state.winDismissed=false;
+    renderCell(last.key); updateScore();
+  });
+  document.getElementById("clearBtn").addEventListener("click", function(){
+    state.board={}; state.history=[]; state.winDismissed=false;
+    Object.keys(hexEls).forEach(function(k){ if(!hexEls[k].crater) renderCell(k); });
+    updateScore();
+  });
+  document.getElementById("randomBtn").addEventListener("click", function(){
+    if(!state.city){ selectCity(CITIES[Math.floor(Math.random()*CITIES.length)].id); }
+    state.board={}; state.history=[];
+    var ids=BUILDINGS.map(function(b){return b.id;});
+    Object.keys(hexEls).forEach(function(k){
+      if(hexEls[k].crater) return;
+      if(Math.random()<0.72){ state.board[k]=ids[Math.floor(Math.random()*ids.length)]; }
+      renderCell(k);
+    });
+    state.winDismissed=false;
+    updateScore();
+  });
+  document.getElementById("againBtn").addEventListener("click", function(){
+    state.board={}; state.history=[]; state.winDismissed=false;
+    Object.keys(hexEls).forEach(function(k){ if(!hexEls[k].crater) renderCell(k); });
+    updateScore();
+    window.scrollTo({top:0, behavior:"smooth"});
+  });
+  document.getElementById("keepBtn").addEventListener("click", function(){
+    state.winDismissed=true;
+    document.getElementById("winBox").classList.remove("show");
+  });
+
+  selectTool("habitat");
+  updateScore();
+})();
+</script>
+</body>
+</html>
