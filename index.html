@@ -753,8 +753,8 @@
     var s=computeScore();
     var cityName = ranking.length ? cityById(ranking[0]).name : (state.city ? state.city.name : null);
     var text = cityName
-      ? "My Moon city is "+cityName+" and I scored "+s.total+" points in Lunar Cities. See you on the Moon?"
-      : "I scored "+s.total+" points in Lunar Cities. See you on the Moon?";
+      ? "My Moon city is "+cityName+" and I scored "+s.total+" points in Lunar Cities. Play it here: https://sounny.github.io/lunar-cities/ See you on the Moon?"
+      : "I scored "+s.total+" points in Lunar Cities. Play it here: https://sounny.github.io/lunar-cities/ See you on the Moon?";
     var msg=document.getElementById("shareMsg");
     function done(){
       msg.textContent="Copied! Share it with a friend.";
